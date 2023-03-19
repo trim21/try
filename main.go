@@ -18,7 +18,7 @@ func main() {
 
 	var opt = Option{}
 
-	cli := pflag.NewFlagSet("retry", pflag.ContinueOnError)
+	cli := pflag.NewFlagSet("try", pflag.ContinueOnError)
 	cli.IntVar(&opt.Limit, "limit", 5, "max retry")
 	if err := cli.Parse(flags); err != nil {
 		fmt.Println(err.Error())
