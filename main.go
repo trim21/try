@@ -51,12 +51,7 @@ func (o Option) Retry(cmd string, args []string) error {
 			c := exec.Command(cmd, args...)
 			c.Stderr = os.Stderr
 			c.Stdout = os.Stdout
-			err := c.Run()
-			if err == nil {
-				return nil
-			}
-
-			return err
+			return c.Run()
 		},
 		retry.Attempts(o.Limit),
 		retry.Delay(o.Delay),
