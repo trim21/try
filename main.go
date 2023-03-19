@@ -56,7 +56,7 @@ func (o Option) Retry(cmd string, args []string) error {
 		retry.Attempts(o.Limit),
 		retry.Delay(o.Delay),
 		retry.OnRetry(func(n uint, err error) {
-			fmt.Printf("--- %d run failed, err: %s ---\n", n+1, err)
+			fmt.Printf("--- failed %d time(s), err: %s ---\n", n+1, err)
 		}),
 	)
 }
