@@ -14,7 +14,7 @@ func main() {
 	var opt = Option{}
 
 	cli := pflag.NewFlagSet("try", pflag.ContinueOnError)
-	cli.UintVar(&opt.Limit, "limit", 5, "max retry")
+	cli.UintVar(&opt.Limit, "limit", 5, "max retry, set limit to 0 to disable limit")
 	cli.DurationVar(&opt.Delay, "delay", time.Millisecond*100, "retry delay")
 	flags, cmd := partitionCommand(os.Args[1:])
 	if len(cmd) == 0 {
@@ -42,10 +42,6 @@ type Option struct {
 }
 
 func (o Option) Retry(cmd string, args []string) error {
-	if o.Limit <= 0 {
-		o.Limit = 3
-	}
-
 	return retry.Do(
 		func() error {
 			c := exec.Command(cmd, args...)
