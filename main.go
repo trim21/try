@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/spf13/pflag"
 )
 
@@ -19,7 +21,8 @@ func main() {
 	var opt = Option{}
 
 	cli := pflag.NewFlagSet("try", pflag.ContinueOnError)
-	cli.IntVar(&opt.Limit, "limit", 5, "max retry")
+	cli.UintVar(&opt.Limit, "limit", 5, "max retry")
+	cli.DurationVar(&opt.Delay, "delay", time.Millisecond*100, "retry delay")
 	if err := cli.Parse(flags); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -33,7 +36,8 @@ func main() {
 }
 
 type Option struct {
-	Limit int
+	Limit uint
+	Delay time.Duration
 }
 
 func (o Option) Retry(cmd string, args []string) error {
@@ -41,20 +45,30 @@ func (o Option) Retry(cmd string, args []string) error {
 		o.Limit = 3
 	}
 
-	for i := 0; i < o.Limit; i++ {
-		fmt.Printf("--- retry %d run ---\n", i+1)
-		c := exec.Command(cmd, args...)
-		c.Stderr = os.Stderr
-		c.Stdout = os.Stdout
-		err := c.Run()
-		if err == nil {
-			return nil
-		}
+	err := retry.Do(
+		func() error {
+			c := exec.Command(cmd, args...)
+			c.Stderr = os.Stderr
+			c.Stdout = os.Stdout
+			err := c.Run()
+			if err == nil {
+				return nil
+			}
 
-		fmt.Printf("--- run %d failed, exit code %d ---\n", i+1, c.ProcessState.ExitCode())
+			return err
+		},
+		retry.Attempts(o.Limit),
+		retry.Delay(o.Delay),
+		retry.OnRetry(func(n uint, err error) {
+			fmt.Printf("--- %d run failed, err: %s ---\n", n+1, err)
+		}),
+	)
+
+	if err != nil {
+		return err
 	}
 
-	return fmt.Errorf("failed to run command after retries")
+	return nil
 }
 
 func partitionCommand(args []string) ([]string, []string) {
