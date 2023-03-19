@@ -11,6 +11,9 @@ release:
 
   name_template: "v{{.Version}}"
 
+builds:
+  - env:
+      - CGO_ENABLED=0
 
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
