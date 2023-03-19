@@ -10,19 +10,20 @@ import (
 	"github.com/spf13/pflag"
 )
 
-const reportTpl = `
-retry --limit=4 -- curl ...
-
---`
-
 func main() {
-	flags, cmd := partitionCommand(os.Args[1:])
-
 	var opt = Option{}
 
 	cli := pflag.NewFlagSet("try", pflag.ContinueOnError)
 	cli.UintVar(&opt.Limit, "limit", 5, "max retry")
 	cli.DurationVar(&opt.Delay, "delay", time.Millisecond*100, "retry delay")
+	flags, cmd := partitionCommand(os.Args[1:])
+	if len(cmd) == 0 {
+		// handle help message
+		fmt.Println("Usage: try [flags] -- command")
+		fmt.Println("\nflags:")
+		cli.PrintDefaults()
+		os.Exit(1)
+	}
 	if err := cli.Parse(flags); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -81,8 +82,7 @@ func partitionCommand(args []string) ([]string, []string) {
 	}
 
 	if splitIndex == -1 {
-		fmt.Println(reportTpl)
-		os.Exit(1)
+		return args, []string{}
 	}
 
 	return args[:splitIndex], args[splitIndex+1:]
