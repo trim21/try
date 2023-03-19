@@ -42,7 +42,7 @@ type Option struct {
 }
 
 func (o Option) Retry(cmd string, args []string) error {
-	if o.Limit > 0 {
+	if o.Limit <= 0 {
 		o.Limit = 3
 	}
 
