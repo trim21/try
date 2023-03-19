@@ -46,7 +46,7 @@ func (o Option) Retry(cmd string, args []string) error {
 		o.Limit = 3
 	}
 
-	err := retry.Do(
+	return retry.Do(
 		func() error {
 			c := exec.Command(cmd, args...)
 			c.Stderr = os.Stderr
@@ -59,12 +59,6 @@ func (o Option) Retry(cmd string, args []string) error {
 			fmt.Printf("--- %d run failed, err: %s ---\n", n+1, err)
 		}),
 	)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func partitionCommand(args []string) ([]string, []string) {
