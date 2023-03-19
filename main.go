@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -31,8 +32,15 @@ func main() {
 	}
 
 	err := opt.Retry(cmd[0], cmd[1:])
+	if opt.Quiet {
+		fmt.Println()
+	}
 	if err != nil {
-		fmt.Println(err.Error())
+		if errors.As(err, &retry.Error{}) {
+			fmt.Println("All attempts fail")
+		} else {
+			fmt.Println(err.Error())
+		}
 		os.Exit(2)
 	}
 }
@@ -55,8 +63,13 @@ func (o Option) Retry(cmd string, args []string) error {
 		},
 		retry.Attempts(o.Limit),
 		retry.Delay(o.Delay),
+		retry.DelayType(retry.FixedDelay),
 		retry.OnRetry(func(n uint, err error) {
-			fmt.Printf("--- failed %d time(s), err: %s ---\n", n+1, err)
+			if o.Quiet {
+				fmt.Print(".")
+			} else {
+				fmt.Printf("--- failed %d time(s), err: %s ---\n", n+1, err)
+			}
 		}),
 	)
 }
