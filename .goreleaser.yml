@@ -12,8 +12,8 @@ release:
   name_template: "v{{.Version}}"
 
 builds:
-  - env:
-      - CGO_ENABLED=0
+  - env: [ CGO_ENABLED=0 ]
+    ldflags: -s -w
 
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"

@@ -11,6 +11,12 @@ import (
 	"github.com/spf13/pflag"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	var opt = Option{}
 
@@ -20,11 +26,18 @@ func main() {
 	cli.BoolVar(&opt.Quiet, "quiet", false, "hide command stdout/stderr")
 	flags, cmd := partitionCommand(os.Args[1:])
 	if len(cmd) == 0 {
-		// handle help message
-		fmt.Println("Usage: try [flags] -- command")
-		fmt.Println("\nflags:")
-		cli.PrintDefaults()
-		os.Exit(1)
+		if contains(flags, "--version") {
+			fmt.Printf("version: %s\n", version)
+			fmt.Printf("commit: %s\n", commit)
+			fmt.Printf("build at: %s\n", date)
+			os.Exit(0)
+		} else {
+			// handle help message
+			fmt.Println("Usage: try [flags] -- command")
+			fmt.Println("\nflags:")
+			cli.PrintDefaults()
+			os.Exit(1)
+		}
 	}
 	if err := cli.Parse(flags); err != nil {
 		fmt.Println(err.Error())
@@ -88,4 +101,14 @@ func partitionCommand(args []string) ([]string, []string) {
 	}
 
 	return args[:splitIndex], args[splitIndex+1:]
+}
+
+func contains(s []string, item string) bool {
+	for _, i := range s {
+		if i == item {
+			return true
+		}
+	}
+
+	return false
 }
