@@ -13,7 +13,6 @@ release:
 
 builds:
   - env: [ CGO_ENABLED=0 ]
-    ldflags: -s -w
 
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
