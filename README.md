@@ -13,7 +13,8 @@ $ try [--limit=3 --delay=100ms] -- curl example.com
 ```
 Usage: try [flags] -- command
 
-Flags:
+flags:
       --delay duration   retry delay (default 100ms)
-      --limit uint       max retry (default 5)
+      --limit uint       max retry, set limit to 0 to disable limit (default 5)
+      --quiet            hide command stdout/stderr
 ```
