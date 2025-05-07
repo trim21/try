@@ -24,7 +24,9 @@ func main() {
 	cli := pflag.NewFlagSet("try", pflag.ContinueOnError)
 	cli.UintVar(&opt.Limit, "limit", 5, "max retry, set limit to 0 to disable limit")
 	cli.DurationVar(&opt.Delay, "delay", time.Millisecond*100, "retry delay")
+	cli.DurationVar(&opt.MaxDelay, "max-delay", time.Second, "max retry delay when using non-fixed delay type")
 	cli.BoolVar(&opt.Quiet, "quiet", false, "hide command stdout/stderr")
+	cli.StringVar(&opt.DelayType, "delay-type", "fixed", "delay type, can 'fixed' / 'backoff' / 'off'")
 	flags, cmd := partitionCommand(os.Args[1:])
 	if len(cmd) == 0 {
 		if slices.Contains(flags, "--version") {
@@ -60,12 +62,26 @@ func main() {
 }
 
 type Option struct {
-	Limit uint
-	Delay time.Duration
-	Quiet bool
+	Limit     uint
+	Delay     time.Duration
+	MaxDelay  time.Duration
+	DelayType string
+	Quiet     bool
 }
 
 func (o Option) Retry(cmd string, args []string) error {
+	var delayType retry.DelayTypeFunc
+	switch o.DelayType {
+	case "fixed":
+		delayType = retry.FixedDelay
+	case "backoff":
+		delayType = retry.BackOffDelay
+	case "off":
+		delayType = nil
+	default:
+		return fmt.Errorf("unknown delay type: %s", o.DelayType)
+	}
+
 	return retry.Do(
 		func() error {
 			c := exec.Command(cmd, args...)
@@ -77,7 +93,8 @@ func (o Option) Retry(cmd string, args []string) error {
 		},
 		retry.Attempts(o.Limit),
 		retry.Delay(o.Delay),
-		retry.DelayType(retry.FixedDelay),
+		retry.MaxDelay(o.MaxDelay),
+		retry.DelayType(delayType),
 		retry.OnRetry(func(n uint, err error) {
 			if o.Quiet {
 				fmt.Print(".")
