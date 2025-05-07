@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"time"
 
 	"github.com/avast/retry-go/v4"
@@ -26,7 +27,7 @@ func main() {
 	cli.BoolVar(&opt.Quiet, "quiet", false, "hide command stdout/stderr")
 	flags, cmd := partitionCommand(os.Args[1:])
 	if len(cmd) == 0 {
-		if contains(flags, "--version") {
+		if slices.Contains(flags, "--version") {
 			fmt.Printf("version: %s\n", version)
 			fmt.Printf("commit: %s\n", commit)
 			fmt.Printf("build at: %s\n", date)
@@ -88,27 +89,11 @@ func (o Option) Retry(cmd string, args []string) error {
 }
 
 func partitionCommand(args []string) ([]string, []string) {
-	var splitIndex = -1
-	for i, arg := range args {
-		if arg == "--" {
-			splitIndex = i
-			break
-		}
-	}
+	var splitIndex = slices.Index(args, "--")
 
 	if splitIndex == -1 {
 		return args, []string{}
 	}
 
 	return args[:splitIndex], args[splitIndex+1:]
-}
-
-func contains(s []string, item string) bool {
-	for _, i := range s {
-		if i == item {
-			return true
-		}
-	}
-
-	return false
 }
