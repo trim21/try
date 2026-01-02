@@ -8,7 +8,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/avast/retry-go/v4"
+	"github.com/avast/retry-go/v5"
 	"github.com/spf13/pflag"
 )
 
