@@ -1,0 +1,40 @@
+name: Test
+
+on:
+  push:
+    branches-ignore:
+      - renovate/**
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go_version:
+          - "~1.26"
+          - "~1.27"
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install Go
+        uses: actions/setup-go@v7.0.0
+        with:
+          go-version: "${{ matrix.go_version }}"
+          cache: true
+
+      - run: go build -trimpath ./...
+
+      - run: go vet ./...
+
+      - run: go test -trimpath -count=1 ./...
+
+  test-checks: # referenced in Mergify conditions, must stay unique across all workflows
+    needs: [test]
+    runs-on: ubuntu-slim
+    steps:
+      - run: echo "all test checks passed"
