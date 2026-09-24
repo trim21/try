@@ -82,15 +82,7 @@ func (o Option) Retry(cmd string, args []string) error {
 		return fmt.Errorf("unknown delay type: %s", o.DelayType)
 	}
 
-	return retry.Do(
-		func() error {
-			c := exec.Command(cmd, args...)
-			if !o.Quiet {
-				c.Stderr = os.Stderr
-				c.Stdout = os.Stdout
-			}
-			return c.Run()
-		},
+	return retry.New(
 		retry.Attempts(o.Limit),
 		retry.Delay(o.Delay),
 		retry.MaxDelay(o.MaxDelay),
@@ -102,6 +94,15 @@ func (o Option) Retry(cmd string, args []string) error {
 				fmt.Printf("--- failed %d time(s), err: %s ---\n", n+1, err)
 			}
 		}),
+	).Do(
+		func() error {
+			c := exec.Command(cmd, args...)
+			if !o.Quiet {
+				c.Stderr = os.Stderr
+				c.Stdout = os.Stdout
+			}
+			return c.Run()
+		},
 	)
 }
 
