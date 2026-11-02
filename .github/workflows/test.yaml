@@ -11,12 +11,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        go_version:
-          - "~1.26"
-          - "~1.27"
 
     steps:
       - uses: actions/checkout@v7.0.1
@@ -24,7 +18,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v7.0.0
         with:
-          go-version: "${{ matrix.go_version }}"
+          go-version-file: 'go.mod'
           cache: true
 
       - run: go build -trimpath ./...
