@@ -3,6 +3,6 @@ module go.octolab.org/toolset/try
 go 1.26.10
 
 require (
-	github.com/avast/retry-go/v5 v5.0.0
+	github.com/avast/retry-go/v5 v5.0.1
 	github.com/spf13/pflag v1.0.10
 )
