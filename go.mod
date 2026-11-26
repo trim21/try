@@ -1,6 +1,6 @@
 module go.octolab.org/toolset/try
 
-go 1.26.11
+go 1.27.4
 
 require (
 	github.com/avast/retry-go/v5 v5.1.1
